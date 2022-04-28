@@ -10,6 +10,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 
 @Configuration
 @EnableWebSecurity
@@ -18,6 +20,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private UserDetailsServiceImp userDetailsService;
 
+    @Autowired
+    private OidcUserService oidcUserService;
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
@@ -28,10 +32,33 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
                 .and()
                 .formLogin()
+                .loginPage("/login")
+                .defaultSuccessUrl("/restaurant", true)
+                .permitAll()
+                .and()
+                .oauth2Login()
                 .defaultSuccessUrl("/restaurant", true)
                 .and()
-                .logout();
+                .logout()
+                .logoutUrl("/logout")
+                .clearAuthentication(true)
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID", "remember-me")
+                .permitAll();
+
+        ClientRegistrationRepository repository =
+                getApplicationContext()
+                        .getBean(ClientRegistrationRepository.class);
+
+        if (repository != null) {
+            http
+                    .oauth2Login().clientRegistrationRepository(repository)
+                    .userInfoEndpoint().oidcUserService(oidcUserService).and()
+                    .loginPage("/login").permitAll();
+        }
+
     }
+
 
     @Bean
     public PasswordEncoder encoder() {
