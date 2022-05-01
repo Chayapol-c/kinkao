@@ -7,6 +7,7 @@
     <script th:src="@{/js/bootstrap.min.js}"></script>
 </head>
 <body>
+<div th:insert="fragments/header :: header"></div>
 <div class="container">
     <h1 class="display-6">Restaurants</h1>
 
@@ -23,6 +24,11 @@
             <td th:text="${restaurant.name}"></td>
             <td th:text="${restaurant.address}"></td>
             <td th:text="${restaurant.rating}"></td>
+            <td style="text-align: center">
+                <a class="btn btn-primary"
+                   th:href="@{/review/{id}(id=${restaurant.id})}">Review</a>
+            </td>
+        </tr>
         </tr>
         </tbody>
     </table>
